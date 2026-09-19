@@ -1,0 +1,4001 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+    <link rel="manifest" href="manifest.json">
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>Ngojol</title>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 15px;
+    background: #f4f4f4;
+}
+
+h1 {
+    text-align: center;
+    margin: 5px 0 15px;
+}
+
+.top-area {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 15px;
+}
+
+.side {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.side-row {
+    display: flex;
+    gap: 8px;
+}
+
+button {
+    padding: 10px 16px;
+    font-size: 16px;
+    cursor: pointer;
+    border: 1px solid #777;
+    border-radius: 5px;
+    background: white;
+}
+
+button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.delete-session {
+    margin-top: 8px;
+    font-size: 13px;
+    padding: 5px 8px;
+}
+
+.delete-pair {
+    margin-top: 5px;
+    font-size: 12px;
+    padding: 3px 7px;
+}
+
+.current-clock {
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    margin: 5px 0 15px;
+}
+
+.table-wrap {
+    overflow-x: auto;
+    background: white;
+}
+
+table {
+    width: 100%;
+    min-width: 1100px;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    border: 1px solid #777;
+    padding: 7px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+th {
+    background: #333;
+    color: white;
+}
+
+.session-date {
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.session-day {
+    margin-top: 4px;
+}
+
+.session-time-box {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #aaa;
+}
+
+.session-time-box label {
+    display: block;
+    font-size: 13px;
+    margin-bottom: 4px;
+}
+
+.session-time-box input[type="time"] {
+    width: 105px;
+    padding: 5px;
+    font-size: 14px;
+    text-align: center;
+    margin-bottom: 7px;
+}
+
+.segment-title {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.time-line {
+    line-height: 1.5;
+    margin-bottom: 6px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #ddd;
+}
+
+.time-line:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.time-line label {
+    display: inline-block;
+    width: 42px;
+    font-size: 13px;
+}
+
+.time-line input {
+    width: 105px;
+    text-align: center;
+}
+
+.duration-line {
+    white-space: nowrap;
+    line-height: 1.8;
+}
+
+.total-label {
+    font-weight: bold;
+    margin-top: 5px;
+    border-top: 1px solid #aaa;
+    padding-top: 5px;
+}
+
+.effective-max {
+    font-weight: bold;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #aaa;
+    line-height: 1.6;
+}
+
+.effective-real {
+    font-weight: bold;
+    margin-top: 5px;
+    line-height: 1.6;
+}
+
+.field-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 5px;
+    margin-bottom: 5px;
+    white-space: nowrap;
+}
+
+.field-line label {
+    font-size: 13px;
+}
+
+input {
+    width: 100px;
+    padding: 6px;
+    font-size: 14px;
+    text-align: right;
+}
+
+.date-input {
+    width: 145px;
+    text-align: left;
+}
+
+.result {
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.empty {
+    text-align: center;
+    padding: 20px;
+    color: #777;
+}
+
+@media (max-width: 700px) {
+
+    body {
+        padding: 8px;
+    }
+
+    .top-area {
+        gap: 10px;
+    }
+
+    button {
+        padding: 9px 10px;
+        font-size: 14px;
+    }
+
+    h1 {
+        font-size: 25px;
+    }
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>Ngojol</h1>
+
+<div class="top-area">
+
+    <div class="side">
+
+        <div class="side-row">
+
+            <button id="newSessionBtn">
+                Buat Sesi Baru
+            </button>
+
+        </div>
+
+        <div class="side-row">
+
+            <button id="startBtn">
+                Start
+            </button>
+
+            <button id="stopBtn" disabled>
+                Stop
+            </button>
+
+        </div>
+
+    </div>
+
+    <div class="side">
+
+        <div class="side-row">
+
+            <button id="exportBtn">
+                Export Excel
+            </button>
+
+        </div>
+
+        <div class="side-row">
+
+            <button id="clearBtn">
+                Clear Data
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<div id="currentClock" class="current-clock">
+    00/00/0000 00:00:00
+</div>
+
+<div class="table-wrap">
+
+<table>
+
+<thead>
+
+<tr>
+
+    <th>Sesi</th>
+
+    <th>Segmen</th>
+
+    <th>Durasi</th>
+
+    <th>Km</th>
+
+    <th>Rupiah</th>
+
+    <th>Rp / Km</th>
+
+    <th>Km / Durasi</th>
+
+    <th>Rp / Durasi</th>
+
+</tr>
+
+</thead>
+
+<tbody id="tableBody"></tbody>
+
+</table>
+
+</div>
+
+
+<script>
+
+
+/*
+=====================================================
+STORAGE
+=====================================================
+*/
+
+const STORAGE_KEY =
+    "aplikasiNgojolData_v2";
+
+
+let sessions =
+    JSON.parse(
+        localStorage.getItem(STORAGE_KEY)
+    ) || [];
+
+
+let currentSessionId = null;
+
+let currentRunning = false;
+
+let currentStartTime = null;
+
+
+/*
+=====================================================
+SIMPAN DATA
+=====================================================
+*/
+
+function saveData() {
+
+    localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(sessions)
+    );
+
+}
+
+
+/*
+=====================================================
+FORMAT TANGGAL
+=====================================================
+*/
+
+function formatDate(dateString) {
+
+    if (!dateString) return "";
+
+    const d =
+        new Date(dateString + "T00:00:00");
+
+    return d.toLocaleDateString(
+        "id-ID",
+        {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric"
+        }
+    );
+
+}
+
+
+/*
+=====================================================
+NAMA HARI
+=====================================================
+*/
+
+function getDayName(dateString) {
+
+    if (!dateString) return "";
+
+    const d =
+        new Date(dateString + "T00:00:00");
+
+    return d.toLocaleDateString(
+        "id-ID",
+        {
+            weekday: "long"
+        }
+    );
+
+}
+
+
+/*
+=====================================================
+FORMAT JAM
+=====================================================
+*/
+
+function formatTime(timestamp) {
+
+    if (!timestamp) return "";
+
+    return new Date(timestamp).toLocaleTimeString(
+        "id-ID",
+        {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: false
+        }
+    );
+
+}
+
+
+/*
+=====================================================
+FORMAT JAM UNTUK INPUT
+=====================================================
+*/
+
+function formatTimeForInput(timestamp) {
+
+    if (!timestamp) return "";
+
+    const d =
+        new Date(timestamp);
+
+    return (
+        String(d.getHours()).padStart(2, "0")
+        + ":" +
+        String(d.getMinutes()).padStart(2, "0")
+        + ":" +
+        String(d.getSeconds()).padStart(2, "0")
+    );
+
+}
+
+
+/*
+=====================================================
+FORMAT DURASI
+=====================================================
+*/
+
+function formatDuration(seconds) {
+
+    seconds =
+        Math.max(
+            0,
+            Math.floor(seconds || 0)
+        );
+
+    const h =
+        Math.floor(seconds / 3600);
+
+    const m =
+        Math.floor(
+            (seconds % 3600) / 60
+        );
+
+    const s =
+        seconds % 60;
+
+    return (
+        String(h).padStart(2, "0")
+        + ":" +
+        String(m).padStart(2, "0")
+        + ":" +
+        String(s).padStart(2, "0")
+    );
+
+}
+
+
+/*
+=====================================================
+FORMAT ANGKA
+=====================================================
+*/
+
+function parseNumber(value) {
+
+    if (!value) return 0;
+
+    return Number(
+        String(value)
+            .replace(/\./g, "")
+            .replace(/,/g, "")
+    ) || 0;
+
+}
+
+
+function formatNumber(value) {
+
+    return Math.round(
+        value || 0
+    ).toLocaleString("id-ID");
+
+}
+
+
+function formatInputNumber(input) {
+
+    if (
+        input.value.trim() === ""
+    ) {
+
+        input.value = "";
+
+        return;
+
+    }
+
+    input.value =
+        formatNumber(
+            parseNumber(input.value)
+        );
+
+}
+
+
+/*
+=====================================================
+INPUT JAM AWAL / JAM AKHIR
+User memilih jam 00:00 s/d 23:59
+seperti input Start dan Stop pada Segmen.
+=====================================================
+*/
+
+function createTimeInput(
+    session,
+    propertyName
+) {
+
+    const input =
+        document.createElement("input");
+
+    input.type =
+        "time";
+
+    /*
+    step 60 = pilihan menit, tanpa detik.
+    Rentang jam bawaan input time adalah
+    00:00 s/d 23:59.
+    */
+
+    input.step =
+        "60";
+
+    input.value =
+        session[propertyName] || "";
+
+    input.addEventListener(
+        "change",
+        () => {
+
+            session[propertyName] =
+                input.value;
+
+            saveData();
+            renderTable();
+
+        }
+    );
+
+    return input;
+
+}
+
+
+/*
+=====================================================
+AMBIL TIMESTAMP JAM AWAL
+=====================================================
+*/
+
+function getWindowStartTimestamp(session) {
+
+    if (
+        !session.date ||
+        !session.jamAwal
+    ) {
+
+        return null;
+
+    }
+
+
+    const parts =
+        session.jamAwal.split(":");
+
+
+    const d =
+        new Date(
+            session.date + "T00:00:00"
+        );
+
+
+    d.setHours(
+        Number(parts[0]),
+        Number(parts[1] || 0),
+        0,
+        0
+    );
+
+
+    return d.getTime();
+
+}
+
+
+/*
+=====================================================
+AMBIL TIMESTAMP JAM AKHIR
+=====================================================
+*/
+
+function getWindowEndTimestamp(session) {
+
+    if (
+        !session.date ||
+        !session.jamAkhir
+    ) {
+
+        return null;
+
+    }
+
+
+    const parts =
+        session.jamAkhir.split(":");
+
+
+    let hour =
+        Number(parts[0]);
+
+
+    const d =
+        new Date(
+            session.date + "T00:00:00"
+        );
+
+
+    /*
+    24:00 = tengah malam hari berikutnya
+    */
+
+    if (hour === 24) {
+
+        d.setDate(
+            d.getDate() + 1
+        );
+
+        d.setHours(
+            0,
+            Number(parts[1] || 0),
+            0,
+            0
+        );
+
+    }
+    else {
+
+        d.setHours(
+            hour,
+            Number(parts[1] || 0),
+            0,
+            0
+        );
+
+    }
+
+
+    return d.getTime();
+
+}
+
+
+/*
+=====================================================
+VALIDASI WINDOW
+=====================================================
+*/
+
+function getWindowInfo(session) {
+
+    const start =
+        getWindowStartTimestamp(
+            session
+        );
+
+
+    const end =
+        getWindowEndTimestamp(
+            session
+        );
+
+
+    if (
+        start === null ||
+        end === null ||
+        end <= start
+    ) {
+
+        return null;
+
+    }
+
+
+    return {
+
+        start:
+            start,
+
+        end:
+            end,
+
+        duration:
+            (end - start) / 1000
+
+    };
+
+}
+
+
+/*
+=====================================================
+TOTAL DURASI SEMUA SEGMEN
+=====================================================
+*/
+
+function getSessionTotalSeconds(session) {
+
+    let total = 0;
+
+
+    for (
+        const pair of session.pairs
+    ) {
+
+        if (!pair.start)
+            continue;
+
+
+        if (pair.stop) {
+
+            total +=
+                (
+                    pair.stop -
+                    pair.start
+                ) / 1000;
+
+        }
+        else if (
+            session.id === currentSessionId &&
+            currentRunning
+        ) {
+
+            total +=
+                (
+                    Date.now() -
+                    pair.start
+                ) / 1000;
+
+        }
+
+    }
+
+
+    return Math.floor(
+        Math.max(
+            0,
+            total
+        )
+    );
+
+}
+
+
+/*
+=====================================================
+DURASI SATU SEGMEN
+=====================================================
+*/
+
+function getPairSeconds(pair) {
+
+    if (!pair.start)
+        return 0;
+
+
+    let end;
+
+
+    if (pair.stop) {
+
+        end =
+            pair.stop;
+
+    }
+    else if (
+        currentRunning
+    ) {
+
+        end =
+            Date.now();
+
+    }
+    else {
+
+        return 0;
+
+    }
+
+
+    return Math.floor(
+        Math.max(
+            0,
+            (
+                end -
+                pair.start
+            ) / 1000
+        )
+    );
+
+}
+
+
+/*
+=====================================================
+DURASI EFEKTIF RIIL
+=====================================================
+
+Hanya menghitung bagian segmen yang berada
+di antara Jam Awal dan Jam Akhir.
+
+Contoh:
+
+Jam Awal  = 08:00
+Jam Akhir = 12:00
+
+Segmen  = 07:30 - 09:00
+
+Yang dihitung hanya:
+08:00 - 09:00 = 01:00
+=====================================================
+*/
+
+function getEffectiveRealSeconds(
+    session,
+    atTime = Date.now()
+) {
+
+    const window =
+        getWindowInfo(session);
+
+
+    if (!window)
+        return 0;
+
+
+    /*
+    Sebelum Jam Awal:
+    belum ada Durasi Efektif Riil.
+    */
+
+    if (
+        atTime < window.start
+    ) {
+
+        return 0;
+
+    }
+
+
+    /*
+    Setelah Jam Akhir:
+    gunakan Jam Akhir sebagai batas.
+    */
+
+    const calculationTime =
+        Math.min(
+            atTime,
+            window.end
+        );
+
+
+    let total = 0;
+
+
+    session.pairs.forEach(
+        pair => {
+
+        if (!pair.start)
+            return;
+
+
+        /*
+        Jika Start setelah Jam Akhir,
+        tidak dihitung.
+        */
+
+        if (
+            pair.start >= window.end
+        ) {
+
+            return;
+
+        }
+
+
+        let pairEnd;
+
+
+        if (pair.stop) {
+
+            pairEnd =
+                pair.stop;
+
+        }
+        else if (
+            session.id === currentSessionId &&
+            currentRunning
+        ) {
+
+            pairEnd =
+                Date.now();
+
+        }
+        else {
+
+            return;
+
+        }
+
+
+        /*
+        Jangan menghitung waktu
+        yang belum terjadi.
+        */
+
+        pairEnd =
+            Math.min(
+                pairEnd,
+                calculationTime,
+                window.end
+            );
+
+
+        const effectiveStart =
+            Math.max(
+                pair.start,
+                window.start
+            );
+
+
+        if (
+            pairEnd > effectiveStart
+        ) {
+
+            total +=
+                (
+                    pairEnd -
+                    effectiveStart
+                ) / 1000;
+
+        }
+
+    });
+
+
+    return Math.floor(
+        Math.max(
+            0,
+            total
+        )
+    );
+
+}
+
+
+/*
+=====================================================
+DURASI EFEKTIF MAKSIMAL
+=====================================================
+
+PRINSIP:
+
+1. Saat Jam Awal tercapai:
+   nilai awal = seluruh durasi window.
+
+2. Sebelum Start pertama:
+   nilai turun setiap detik.
+
+3. Saat Segmen berjalan:
+   nilai BEKU.
+
+4. Setelah Stop:
+   nilai turun setiap detik karena idle.
+
+5. Saat Start berikutnya:
+   nilai kembali BEKU pada nilai tersisa.
+
+6. Saat Jam Akhir tercapai:
+   nilai BEKU permanen.
+
+7. Segmen setelah Jam Akhir:
+   tidak memengaruhi nilai.
+
+8. Segmen yang seluruhnya sebelum Jam Awal:
+   tidak mengurangi nilai pada Jam Awal.
+=====================================================
+*/
+
+function getEffectiveMaxSeconds(
+    session,
+    atTime = Date.now()
+) {
+
+    const window =
+        getWindowInfo(session);
+
+
+    if (!window)
+        return null;
+
+
+    /*
+    Sebelum Jam Awal:
+    belum menampilkan nilai.
+    */
+
+    if (
+        atTime < window.start
+    ) {
+
+        return null;
+
+    }
+
+
+    /*
+    Kita hanya menghitung sampai
+    Jam Akhir.
+    */
+
+    const targetTime =
+        Math.min(
+            atTime,
+            window.end
+        );
+
+
+    /*
+    Urutkan segmen berdasarkan Start.
+    */
+
+    const pairs =
+        [...session.pairs]
+            .filter(
+                pair =>
+                    pair.start &&
+                    pair.start < window.end
+            )
+            .sort(
+                (a, b) =>
+                    a.start - b.start
+            );
+
+
+    /*
+    Nilai awal = seluruh window.
+    */
+
+    let remaining =
+        window.duration;
+
+
+    /*
+    coveredUntil menunjukkan sampai kapan
+    waktu dianggap sedang digunakan oleh
+    segmen sebelumnya.
+
+    Pada awal window:
+    belum ada segmen yang aktif.
+    */
+
+    let coveredUntil =
+        window.start;
+
+
+    /*
+    Apakah pada targetTime ada segmen
+    yang sedang berjalan?
+    */
+
+    for (
+        const pair of pairs
+    ) {
+
+        const start =
+            pair.start;
+
+
+        /*
+        Tentukan Stop.
+
+        Jika belum Stop dan ini segmen
+        yang sedang berjalan, gunakan
+        waktu sekarang.
+        */
+
+        let stop;
+
+
+        if (pair.stop) {
+
+            stop =
+                pair.stop;
+
+        }
+        else {
+
+            stop =
+                Date.now();
+
+        }
+
+
+        /*
+        Jika Start sebelum Jam Awal
+        dan Stop juga sebelum Jam Awal,
+        segmen ini sama sekali tidak
+        berpengaruh terhadap window.
+        */
+
+        if (
+            stop <= window.start
+        ) {
+
+            continue;
+
+        }
+
+
+        /*
+        Kalau Start sebelum Jam Awal,
+        anggap segmen sudah menutup
+        window sejak Jam Awal.
+        */
+
+        const segmentStart =
+            Math.max(
+                start,
+                window.start
+            );
+
+
+        /*
+        Jika Start segmen sudah melewati
+        target waktu, belum perlu diproses.
+        */
+
+        if (
+            segmentStart > targetTime
+        ) {
+
+            /*
+            Jika belum pernah ada segmen
+            sampai targetTime, waktu sejak
+            Jam Awal adalah idle.
+            */
+
+            if (
+                coveredUntil < targetTime
+            ) {
+
+                remaining -=
+                    (
+                        targetTime -
+                        coveredUntil
+                    ) / 1000;
+
+            }
+
+            return Math.floor(
+                Math.max(
+                    0,
+                    remaining
+                )
+            );
+
+        }
+
+
+        /*
+        =================================================
+        IDLE SEBELUM SEGMENT
+
+        Jika ada jarak antara coveredUntil
+        dan Start segmen, itu idle.
+        =================================================
+        */
+
+        if (
+            segmentStart > coveredUntil
+        ) {
+
+            const idle =
+                (
+                    segmentStart -
+                    coveredUntil
+                ) / 1000;
+
+
+            remaining -= idle;
+
+        }
+
+
+        /*
+        =================================================
+        SEGMENT SEDANG BERJALAN
+        =================================================
+        */
+
+        const segmentStop =
+            Math.min(
+                stop,
+                window.end
+            );
+
+
+        /*
+        Kalau target waktu berada di dalam
+        segmen ini, nilai dibekukan.
+
+        Contoh:
+        08:30 Start
+        window mulai 08:00
+
+        nilai pada Start = 03:30
+
+        Selama 08:30-09:00:
+        tetap 03:30.
+        */
+
+        if (
+            targetTime >= segmentStart &&
+            targetTime < segmentStop
+        ) {
+
+            return Math.floor(
+                Math.max(
+                    0,
+                    remaining
+                )
+            );
+
+        }
+
+
+        /*
+        Kalau segmen sudah selesai sebelum
+        targetTime, coveredUntil menjadi
+        waktu Stop.
+
+        Setelah itu waktu berikutnya
+        akan dianggap idle.
+        */
+
+        if (
+            segmentStop > coveredUntil
+        ) {
+
+            coveredUntil =
+                segmentStop;
+
+        }
+
+
+        /*
+        Jika Stop berada setelah targetTime,
+        berarti sebenarnya targetTime berada
+        di dalam segmen.
+
+        Nilainya sudah seharusnya dibekukan.
+        */
+
+        if (
+            targetTime < segmentStop
+        ) {
+
+            return Math.floor(
+                Math.max(
+                    0,
+                    remaining
+                )
+            );
+
+        }
+
+    }
+
+
+    /*
+    =====================================================
+    SETELAH SEGMEN TERAKHIR
+
+    Jika belum mencapai Jam Akhir,
+    waktu setelah Stop adalah idle.
+
+    Jika targetTime adalah Jam Akhir,
+    idle dihitung sampai Jam Akhir lalu
+    nilai dibekukan.
+    =====================================================
+    */
+
+    if (
+        coveredUntil < targetTime
+    ) {
+
+        remaining -=
+            (
+                targetTime -
+                coveredUntil
+            ) / 1000;
+
+    }
+
+
+    return Math.floor(
+        Math.max(
+            0,
+            remaining
+        )
+    );
+
+}
+
+
+/*
+=====================================================
+DELETE SESI
+=====================================================
+*/
+
+function deleteSession(sessionId) {
+
+    const yakin =
+        confirm(
+            "Hapus sesi ini?"
+        );
+
+
+    if (!yakin)
+        return;
+
+
+    if (
+        sessionId === currentSessionId &&
+        currentRunning
+    ) {
+
+        alert(
+            "Stop sesi terlebih dahulu sebelum menghapusnya."
+        );
+
+        return;
+
+    }
+
+
+    sessions =
+        sessions.filter(
+            session =>
+                session.id !== sessionId
+        );
+
+
+    if (
+        currentSessionId === sessionId
+    ) {
+
+        currentSessionId =
+            null;
+
+    }
+
+
+    saveData();
+
+    renderTable();
+
+}
+
+
+/*
+=====================================================
+DELETE SEGMENT
+=====================================================
+*/
+
+function deletePair(
+    sessionId,
+    pairId
+) {
+
+    const session =
+        sessions.find(
+            s =>
+                s.id === sessionId
+        );
+
+
+    if (!session)
+        return;
+
+
+    const pair =
+        session.pairs.find(
+            p =>
+                p.id === pairId
+        );
+
+
+    if (
+        pair &&
+        !pair.stop
+    ) {
+
+        alert(
+            "Stop segmen tersebut terlebih dahulu sebelum menghapusnya."
+        );
+
+        return;
+
+    }
+
+
+    const yakin =
+        confirm(
+            "Hapus Segmen ini?"
+        );
+
+
+    if (!yakin)
+        return;
+
+
+    session.pairs =
+        session.pairs.filter(
+            p =>
+                p.id !== pairId
+        );
+
+
+    saveData();
+
+    renderTable();
+
+}
+
+
+/*
+=====================================================
+RENDER TABLE
+=====================================================
+*/
+
+function renderTable() {
+
+    tableBody.innerHTML = "";
+
+
+    if (
+        sessions.length === 0
+    ) {
+
+        tableBody.innerHTML =
+            `
+            <tr>
+                <td colspan="8"
+                    class="empty">
+                    Belum ada sesi
+                </td>
+            </tr>
+            `;
+
+        return;
+
+    }
+
+
+    sessions.forEach(
+        session => {
+
+
+        /*
+        =============================================
+        KOLOM SESI
+        =============================================
+        */
+
+        const tr =
+            document.createElement("tr");
+
+
+        const tdSession =
+            document.createElement("td");
+
+
+        const dateInput =
+            document.createElement("input");
+
+
+        dateInput.type =
+            "date";
+
+
+        dateInput.className =
+            "date-input";
+
+
+        dateInput.value =
+            session.date || "";
+
+
+        dateInput.addEventListener(
+            "change",
+            () => {
+
+                session.date =
+                    dateInput.value;
+
+                saveData();
+
+                renderTable();
+
+            }
+        );
+
+
+        const dateText =
+            document.createElement("div");
+
+
+        dateText.className =
+            "session-date";
+
+
+        dateText.textContent =
+            formatDate(
+                session.date
+            );
+
+
+        const dayText =
+            document.createElement("div");
+
+
+        dayText.className =
+            "session-day";
+
+
+        dayText.textContent =
+            getDayName(
+                session.date
+            );
+
+
+        /*
+        =============================================
+        JAM AWAL / JAM AKHIR
+        =============================================
+        */
+
+        const sessionTimeBox =
+            document.createElement("div");
+
+
+        sessionTimeBox.className =
+            "session-time-box";
+
+
+        /*
+        JAM AWAL
+        */
+
+        const awalLabel =
+            document.createElement("label");
+
+
+        awalLabel.textContent =
+            "Jam Awal";
+
+
+        const awalSelect =
+            createTimeInput(
+                session,
+                "jamAwal"
+            );
+
+
+        /*
+        JAM AKHIR
+        */
+
+        const akhirLabel =
+            document.createElement("label");
+
+
+        akhirLabel.textContent =
+            "Jam Akhir";
+
+
+        const akhirSelect =
+            createTimeInput(
+                session,
+                "jamAkhir"
+            );
+
+
+        sessionTimeBox.appendChild(
+            awalLabel
+        );
+
+
+        sessionTimeBox.appendChild(
+            awalSelect
+        );
+
+
+        sessionTimeBox.appendChild(
+            akhirLabel
+        );
+
+
+        sessionTimeBox.appendChild(
+            akhirSelect
+        );
+
+
+        /*
+        =============================================
+        DELETE SESI
+        =============================================
+        */
+
+        const deleteSessionBtn =
+            document.createElement("button");
+
+
+        deleteSessionBtn.textContent =
+            "Delete Sesi";
+
+
+        deleteSessionBtn.className =
+            "delete-session";
+
+
+        deleteSessionBtn.addEventListener(
+            "click",
+            () => {
+
+                deleteSession(
+                    session.id
+                );
+
+            }
+        );
+
+
+        tdSession.appendChild(
+            dateInput
+        );
+
+
+        tdSession.appendChild(
+            dateText
+        );
+
+
+        tdSession.appendChild(
+            dayText
+        );
+
+
+        tdSession.appendChild(
+            sessionTimeBox
+        );
+
+
+        tdSession.appendChild(
+            deleteSessionBtn
+        );
+
+
+        /*
+        =============================================
+        KOLOM SEGMEN
+        =============================================
+        */
+
+        const tdTime =
+            document.createElement("td");
+
+
+        session.pairs.forEach(
+            (pair, index) => {
+
+            const line =
+                document.createElement("div");
+
+
+            line.className =
+                "time-line";
+
+
+            /*
+            NAMA SEGMEN
+            */
+
+            const segmentTitle =
+                document.createElement("div");
+
+
+            segmentTitle.className =
+                "segment-title";
+
+
+            segmentTitle.textContent =
+                "Segmen " +
+                (index + 1);
+
+
+            /*
+            START
+            */
+
+            const startLabel =
+                document.createElement("label");
+
+
+            startLabel.textContent =
+                "Start";
+
+
+            const startInput =
+                document.createElement("input");
+
+
+            startInput.type =
+                "time";
+
+
+            startInput.step =
+                "1";
+
+
+            startInput.value =
+                pair.start
+                ?
+                formatTimeForInput(
+                    pair.start
+                )
+                :
+                "";
+
+
+            startInput.addEventListener(
+                "change",
+                () => {
+
+                    if (
+                        startInput.value
+                    ) {
+
+                        const parts =
+                            startInput.value
+                                .split(":");
+
+
+                        const d =
+                            new Date(
+                                pair.start ||
+                                Date.now()
+                            );
+
+
+                        /*
+                        Gunakan tanggal sesi.
+                        */
+
+                        if (session.date) {
+
+                            const dateParts =
+                                session.date
+                                    .split("-");
+
+
+                            d.setFullYear(
+                                Number(dateParts[0]),
+                                Number(dateParts[1]) - 1,
+                                Number(dateParts[2])
+                            );
+
+                        }
+
+
+                        d.setHours(
+                            Number(parts[0]),
+                            Number(parts[1]),
+                            Number(parts[2] || 0),
+                            0
+                        );
+
+
+                        pair.start =
+                            d.getTime();
+
+                    }
+                    else {
+
+                        pair.start =
+                            null;
+
+                    }
+
+
+                    saveData();
+
+                    renderTable();
+
+                }
+            );
+
+
+            /*
+            STOP
+            */
+
+            const br =
+                document.createElement("br");
+
+
+            const stopLabel =
+                document.createElement("label");
+
+
+            stopLabel.textContent =
+                "Stop";
+
+
+            const stopInput =
+                document.createElement("input");
+
+
+            stopInput.type =
+                "time";
+
+
+            stopInput.step =
+                "1";
+
+
+            stopInput.value =
+                pair.stop
+                ?
+                formatTimeForInput(
+                    pair.stop
+                )
+                :
+                "";
+
+
+            stopInput.addEventListener(
+                "change",
+                () => {
+
+                    if (
+                        stopInput.value
+                    ) {
+
+                        const parts =
+                            stopInput.value
+                                .split(":");
+
+
+                        const d =
+                            new Date(
+                                pair.stop ||
+                                pair.start ||
+                                Date.now()
+                            );
+
+
+                        if (session.date) {
+
+                            const dateParts =
+                                session.date
+                                    .split("-");
+
+
+                            d.setFullYear(
+                                Number(dateParts[0]),
+                                Number(dateParts[1]) - 1,
+                                Number(dateParts[2])
+                            );
+
+                        }
+
+
+                        d.setHours(
+                            Number(parts[0]),
+                            Number(parts[1]),
+                            Number(parts[2] || 0),
+                            0
+                        );
+
+
+                        pair.stop =
+                            d.getTime();
+
+                    }
+                    else {
+
+                        pair.stop =
+                            null;
+
+                    }
+
+
+                    saveData();
+
+                    renderTable();
+
+                }
+            );
+
+
+            /*
+            DELETE
+            */
+
+            const deletePairBtn =
+                document.createElement("button");
+
+
+            deletePairBtn.textContent =
+                "Delete";
+
+
+            deletePairBtn.className =
+                "delete-pair";
+
+
+            deletePairBtn.addEventListener(
+                "click",
+                () => {
+
+                    deletePair(
+                        session.id,
+                        pair.id
+                    );
+
+                }
+            );
+
+
+            line.appendChild(
+                segmentTitle
+            );
+
+
+            line.appendChild(
+                startLabel
+            );
+
+
+            line.appendChild(
+                startInput
+            );
+
+
+            line.appendChild(
+                br
+            );
+
+
+            line.appendChild(
+                stopLabel
+            );
+
+
+            line.appendChild(
+                stopInput
+            );
+
+
+            line.appendChild(
+                document.createElement("br")
+            );
+
+
+            line.appendChild(
+                deletePairBtn
+            );
+
+
+            tdTime.appendChild(
+                line
+            );
+
+        });
+
+
+        /*
+        =============================================
+        KOLOM DURASI
+        =============================================
+        */
+
+        const tdDuration =
+            document.createElement("td");
+
+
+        session.pairs.forEach(
+            pair => {
+
+            const line =
+                document.createElement("div");
+
+
+            line.className =
+                "duration-line";
+
+
+            line.dataset.pairId =
+                pair.id;
+
+
+            line.textContent =
+                formatDuration(
+                    getPairSeconds(pair)
+                );
+
+
+            tdDuration.appendChild(
+                line
+            );
+
+        });
+
+
+        /*
+        TOTAL DURASI
+        */
+
+        const totalLabel =
+            document.createElement("div");
+
+
+        totalLabel.className =
+            "total-label";
+
+
+        totalLabel.dataset.totalSession =
+            session.id;
+
+
+        totalLabel.textContent =
+            "Total: " +
+            formatDuration(
+                getSessionTotalSeconds(
+                    session
+                )
+            );
+
+
+        tdDuration.appendChild(
+            totalLabel
+        );
+
+
+        /*
+        =============================================
+        DURASI EFEKTIF MAKSIMAL
+        =============================================
+        */
+
+        const effectiveMax =
+            document.createElement("div");
+
+
+        effectiveMax.className =
+            "effective-max";
+
+
+        effectiveMax.dataset.effectiveMax =
+            session.id;
+
+
+        const maxSeconds =
+            getEffectiveMaxSeconds(
+                session
+            );
+
+
+        effectiveMax.textContent =
+            "Efektif Maksimal: " +
+            (
+                maxSeconds === null
+                ?
+                "--:--:--"
+                :
+                formatDuration(
+                    maxSeconds
+                )
+            );
+
+
+        tdDuration.appendChild(
+            effectiveMax
+        );
+
+
+        /*
+        =============================================
+        DURASI EFEKTIF RIIL
+        =============================================
+        */
+
+        const effectiveReal =
+            document.createElement("div");
+
+
+        effectiveReal.className =
+            "effective-real";
+
+
+        effectiveReal.dataset.effectiveReal =
+            session.id;
+
+
+        effectiveReal.textContent =
+            "Efektif Riil: " +
+            formatDuration(
+                getEffectiveRealSeconds(
+                    session
+                )
+            );
+
+
+        tdDuration.appendChild(
+            effectiveReal
+        );
+
+
+        /*
+        =============================================
+        KOLOM KM
+        =============================================
+        */
+
+        const tdKm =
+            document.createElement("td");
+
+
+        const kmAwalLine =
+            document.createElement("div");
+
+
+        kmAwalLine.className =
+            "field-line";
+
+
+        const kmAwalLabel =
+            document.createElement("label");
+
+
+        kmAwalLabel.textContent =
+            "Awal";
+
+
+        const kmAwalInput =
+            document.createElement("input");
+
+
+        kmAwalInput.inputMode =
+            "numeric";
+
+
+        kmAwalInput.value =
+            session.kmAwal === "" ||
+            session.kmAwal == null
+            ?
+            ""
+            :
+            formatNumber(
+                session.kmAwal
+            );
+
+
+        kmAwalInput.addEventListener(
+            "input",
+            () => {
+
+                session.kmAwal =
+                    parseNumber(
+                        kmAwalInput.value
+                    );
+
+                saveData();
+
+                updateCalculations();
+
+            }
+        );
+
+
+        kmAwalInput.addEventListener(
+            "blur",
+            () => {
+
+                formatInputNumber(
+                    kmAwalInput
+                );
+
+                session.kmAwal =
+                    parseNumber(
+                        kmAwalInput.value
+                    );
+
+                saveData();
+
+                updateCalculations();
+
+            }
+        );
+
+
+        kmAwalLine.appendChild(
+            kmAwalLabel
+        );
+
+
+        kmAwalLine.appendChild(
+            kmAwalInput
+        );
+
+
+        const kmAkhirLine =
+            document.createElement("div");
+
+
+        kmAkhirLine.className =
+            "field-line";
+
+
+        const kmAkhirLabel =
+            document.createElement("label");
+
+
+        kmAkhirLabel.textContent =
+            "Akhir";
+
+
+        const kmAkhirInput =
+            document.createElement("input");
+
+
+        kmAkhirInput.inputMode =
+            "numeric";
+
+
+        kmAkhirInput.value =
+            session.kmAkhir === "" ||
+            session.kmAkhir == null
+            ?
+            ""
+            :
+            formatNumber(
+                session.kmAkhir
+            );
+
+
+        kmAkhirInput.addEventListener(
+            "input",
+            () => {
+
+                session.kmAkhir =
+                    parseNumber(
+                        kmAkhirInput.value
+                    );
+
+                saveData();
+
+                updateCalculations();
+
+            }
+        );
+
+
+        kmAkhirInput.addEventListener(
+            "blur",
+            () => {
+
+                formatInputNumber(
+                    kmAkhirInput
+                );
+
+                session.kmAkhir =
+                    parseNumber(
+                        kmAkhirInput.value
+                    );
+
+                saveData();
+
+                updateCalculations();
+
+            }
+        );
+
+
+        kmAkhirLine.appendChild(
+            kmAkhirLabel
+        );
+
+
+        kmAkhirLine.appendChild(
+            kmAkhirInput
+        );
+
+
+        const kmResult =
+            document.createElement("div");
+
+
+        kmResult.className =
+            "result";
+
+
+        kmResult.dataset.kmResult =
+            session.id;
+
+
+        tdKm.appendChild(
+            kmAwalLine
+        );
+
+
+        tdKm.appendChild(
+            kmAkhirLine
+        );
+
+
+        tdKm.appendChild(
+            kmResult
+        );
+
+
+        /*
+        =============================================
+        KOLOM RUPIAH
+        =============================================
+        */
+
+        const tdRp =
+            document.createElement("td");
+
+
+        const appLine =
+            document.createElement("div");
+
+
+        appLine.className =
+            "field-line";
+
+
+        const appLabel =
+            document.createElement("label");
+
+
+        appLabel.textContent =
+            "Aplikasi";
+
+
+        const appInput =
+            document.createElement("input");
+
+
+        appInput.inputMode =
+            "numeric";
+
+
+        appInput.value =
+            session.rpAplikasi === "" ||
+            session.rpAplikasi == null
+            ?
+            ""
+            :
+            formatNumber(
+                session.rpAplikasi
+            );
+
+
+        appInput.addEventListener(
+            "input",
+            () => {
+
+                session.rpAplikasi =
+                    parseNumber(
+                        appInput.value
+                    );
+
+                saveData();
+
+                updateCalculations();
+
+            }
+        );
+
+
+        appInput.addEventListener(
+            "blur",
+            () => {
+
+                formatInputNumber(
+                    appInput
+                );
+
+                session.rpAplikasi =
+                    parseNumber(
+                        appInput.value
+                    );
+
+                saveData();
+
+                updateCalculations();
+
+            }
+        );
+
+
+        appLine.appendChild(
+            appLabel
+        );
+
+
+        appLine.appendChild(
+            appInput
+        );
+
+
+        const cashLine =
+            document.createElement("div");
+
+
+        cashLine.className =
+            "field-line";
+
+
+        const cashLabel =
+            document.createElement("label");
+
+
+        cashLabel.textContent =
+            "Cash";
+
+
+        const cashInput =
+            document.createElement("input");
+
+
+        cashInput.inputMode =
+            "numeric";
+
+
+        cashInput.value =
+            session.rpCash === "" ||
+            session.rpCash == null
+            ?
+            ""
+            :
+            formatNumber(
+                session.rpCash
+            );
+
+
+        cashInput.addEventListener(
+            "input",
+            () => {
+
+                session.rpCash =
+                    parseNumber(
+                        cashInput.value
+                    );
+
+                saveData();
+
+                updateCalculations();
+
+            }
+        );
+
+
+        cashInput.addEventListener(
+            "blur",
+            () => {
+
+                formatInputNumber(
+                    cashInput
+                );
+
+                session.rpCash =
+                    parseNumber(
+                        cashInput.value
+                    );
+
+                saveData();
+
+                updateCalculations();
+
+            }
+        );
+
+
+        cashLine.appendChild(
+            cashLabel
+        );
+
+
+        cashLine.appendChild(
+            cashInput
+        );
+
+
+        const rpResult =
+            document.createElement("div");
+
+
+        rpResult.className =
+            "result";
+
+
+        rpResult.dataset.rpResult =
+            session.id;
+
+
+        tdRp.appendChild(
+            appLine
+        );
+
+
+        tdRp.appendChild(
+            cashLine
+        );
+
+
+        tdRp.appendChild(
+            rpResult
+        );
+
+
+        /*
+        =============================================
+        RP / KM
+        =============================================
+        */
+
+        const tdRpKm =
+            document.createElement("td");
+
+
+        const rpKmResult =
+            document.createElement("div");
+
+
+        rpKmResult.className =
+            "result";
+
+
+        rpKmResult.dataset.rpKm =
+            session.id;
+
+
+        tdRpKm.appendChild(
+            rpKmResult
+        );
+
+
+        /*
+        =============================================
+        KM / DURASI
+        =============================================
+        */
+
+        const tdKmDuration =
+            document.createElement("td");
+
+
+        const kmDurationResult =
+            document.createElement("div");
+
+
+        kmDurationResult.className =
+            "result";
+
+
+        kmDurationResult.dataset.kmDuration =
+            session.id;
+
+
+        tdKmDuration.appendChild(
+            kmDurationResult
+        );
+
+
+        /*
+        =============================================
+        RP / DURASI
+        =============================================
+        */
+
+        const tdRpDuration =
+            document.createElement("td");
+
+
+        const rpDurationResult =
+            document.createElement("div");
+
+
+        rpDurationResult.className =
+            "result";
+
+
+        rpDurationResult.dataset.rpDuration =
+            session.id;
+
+
+        tdRpDuration.appendChild(
+            rpDurationResult
+        );
+
+
+        /*
+        =============================================
+        MASUKKAN SEMUA KOLOM
+        =============================================
+        */
+
+        tr.appendChild(tdSession);
+
+        tr.appendChild(tdTime);
+
+        tr.appendChild(tdDuration);
+
+        tr.appendChild(tdKm);
+
+        tr.appendChild(tdRp);
+
+        tr.appendChild(tdRpKm);
+
+        tr.appendChild(tdKmDuration);
+
+        tr.appendChild(tdRpDuration);
+
+
+        tableBody.appendChild(tr);
+
+    });
+
+
+    updateCalculations();
+
+}
+
+
+/*
+=====================================================
+UPDATE PERHITUNGAN
+=====================================================
+*/
+
+function updateCalculations() {
+
+    sessions.forEach(
+        session => {
+
+
+        const totalSeconds =
+            getSessionTotalSeconds(
+                session
+            );
+
+
+        const km =
+            Number(session.kmAkhir || 0)
+            -
+            Number(session.kmAwal || 0);
+
+
+        const totalRp =
+            Number(session.rpAplikasi || 0)
+            +
+            Number(session.rpCash || 0);
+
+
+        /*
+        =============================================
+        KM
+        =============================================
+        */
+
+        const kmResult =
+            document.querySelector(
+                `[data-km-result="${session.id}"]`
+            );
+
+
+        if (kmResult) {
+
+            kmResult.textContent =
+                "Selisih: " +
+                formatNumber(km);
+
+        }
+
+
+        /*
+        =============================================
+        RUPIAH
+        =============================================
+        */
+
+        const rpResult =
+            document.querySelector(
+                `[data-rp-result="${session.id}"]`
+            );
+
+
+        if (rpResult) {
+
+            rpResult.textContent =
+                "Total: Rp " +
+                formatNumber(totalRp);
+
+        }
+
+
+        /*
+        =============================================
+        RP / KM
+        =============================================
+        */
+
+        const rpKmResult =
+            document.querySelector(
+                `[data-rp-km="${session.id}"]`
+            );
+
+
+        if (rpKmResult) {
+
+            if (km > 0) {
+
+                rpKmResult.textContent =
+                    "Rp " +
+                    formatNumber(
+                        totalRp / km
+                    ) +
+                    "/km";
+
+            }
+            else {
+
+                rpKmResult.textContent =
+                    "-";
+
+            }
+
+        }
+
+
+        /*
+        =============================================
+        KM / DURASI
+        =============================================
+        */
+
+        const kmDurationResult =
+            document.querySelector(
+                `[data-km-duration="${session.id}"]`
+            );
+
+
+        if (kmDurationResult) {
+
+            if (
+                totalSeconds > 0 &&
+                km >= 0
+            ) {
+
+                const hours =
+                    totalSeconds / 3600;
+
+
+                const kmPerHour =
+                    km / hours;
+
+
+                kmDurationResult.textContent =
+                    kmPerHour.toFixed(2) +
+                    " km/jam";
+
+            }
+            else {
+
+                kmDurationResult.textContent =
+                    "-";
+
+            }
+
+        }
+
+
+        /*
+        =============================================
+        RP / DURASI
+        =============================================
+        */
+
+        const rpDurationResult =
+            document.querySelector(
+                `[data-rp-duration="${session.id}"]`
+            );
+
+
+        if (rpDurationResult) {
+
+            if (
+                totalSeconds > 0
+            ) {
+
+                const hours =
+                    totalSeconds / 3600;
+
+
+                const rpPerHour =
+                    totalRp / hours;
+
+
+                rpDurationResult.textContent =
+                    "Rp " +
+                    formatNumber(
+                        rpPerHour
+                    ) +
+                    " / jam";
+
+            }
+            else {
+
+                rpDurationResult.textContent =
+                    "-";
+
+            }
+
+        }
+
+
+        /*
+        =============================================
+        TOTAL DURASI
+        =============================================
+        */
+
+        const totalElement =
+            document.querySelector(
+                `[data-total-session="${session.id}"]`
+            );
+
+
+        if (totalElement) {
+
+            totalElement.textContent =
+                "Total: " +
+                formatDuration(
+                    totalSeconds
+                );
+
+        }
+
+
+        /*
+        =============================================
+        EFEKTIF MAKSIMAL
+        =============================================
+        */
+
+        const effectiveMaxElement =
+            document.querySelector(
+                `[data-effective-max="${session.id}"]`
+            );
+
+
+        if (effectiveMaxElement) {
+
+            const maxSeconds =
+                getEffectiveMaxSeconds(
+                    session
+                );
+
+
+            effectiveMaxElement.textContent =
+                "Efektif Maksimal: " +
+                (
+                    maxSeconds === null
+                    ?
+                    "--:--:--"
+                    :
+                    formatDuration(
+                        maxSeconds
+                    )
+                );
+
+        }
+
+
+        /*
+        =============================================
+        EFEKTIF RIIL
+        =============================================
+        */
+
+        const effectiveRealElement =
+            document.querySelector(
+                `[data-effective-real="${session.id}"]`
+            );
+
+
+        if (effectiveRealElement) {
+
+            effectiveRealElement.textContent =
+                "Efektif Riil: " +
+                formatDuration(
+                    getEffectiveRealSeconds(
+                        session
+                    )
+                );
+
+        }
+
+
+        /*
+        =============================================
+        DURASI SETIAP SEGMEN
+        =============================================
+        */
+
+        session.pairs.forEach(
+            pair => {
+
+            const durationElement =
+                document.querySelector(
+                    `[data-pair-id="${pair.id}"]`
+                );
+
+
+            if (durationElement) {
+
+                durationElement.textContent =
+                    formatDuration(
+                        getPairSeconds(pair)
+                    );
+
+            }
+
+        });
+
+    });
+
+}
+
+
+/*
+=====================================================
+TANGGAL HARI INI
+=====================================================
+*/
+
+function getTodayDate() {
+
+    const now =
+        new Date();
+
+
+    const year =
+        now.getFullYear();
+
+
+    const month =
+        String(
+            now.getMonth() + 1
+        ).padStart(2, "0");
+
+
+    const day =
+        String(
+            now.getDate()
+        ).padStart(2, "0");
+
+
+    return (
+        year +
+        "-" +
+        month +
+        "-" +
+        day
+    );
+
+}
+
+
+/*
+=====================================================
+BUTTON ELEMENT
+=====================================================
+*/
+
+const newSessionBtn =
+    document.getElementById(
+        "newSessionBtn"
+    );
+
+
+const startBtn =
+    document.getElementById(
+        "startBtn"
+    );
+
+
+const stopBtn =
+    document.getElementById(
+        "stopBtn"
+    );
+
+
+const exportBtn =
+    document.getElementById(
+        "exportBtn"
+    );
+
+
+const clearBtn =
+    document.getElementById(
+        "clearBtn"
+    );
+
+
+const tableBody =
+    document.getElementById(
+        "tableBody"
+    );
+
+
+/*
+=====================================================
+JAM SEKARANG
+=====================================================
+*/
+
+const currentClock =
+    document.getElementById(
+        "currentClock"
+    );
+
+
+function updateCurrentClock() {
+
+    const now = new Date();
+
+    const tanggal =
+        now.toLocaleDateString(
+            "id-ID",
+            {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric"
+            }
+        );
+
+    const jam =
+        now.toLocaleTimeString(
+            "id-ID",
+            {
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: false
+            }
+        );
+
+    const namaHari = [
+    "Minggu",
+    "Senin",
+    "Selasa",
+    "Rabu",
+    "Kamis",
+    "Jumat",
+    "Sabtu"
+][now.getDay()];
+
+currentClock.textContent =
+    "" + namaHari +
+    " - " + tanggal +
+    " - " + jam;
+
+}
+
+
+/*
+=====================================================
+BUAT SESI BARU
+=====================================================
+*/
+
+newSessionBtn.addEventListener(
+    "click",
+    () => {
+
+    if (currentRunning) {
+
+        alert(
+            "Stop sesi yang sedang berjalan terlebih dahulu."
+        );
+
+        return;
+
+    }
+
+
+    const id =
+        Date.now();
+
+
+    const newSession = {
+
+        id:
+            id,
+
+        date:
+            getTodayDate(),
+
+        jamAwal:
+            "06:00",
+
+        jamAkhir:
+            "10:00",
+
+        pairs:
+            [],
+
+        kmAwal:
+            "",
+
+        kmAkhir:
+            "",
+
+        rpAplikasi:
+            "",
+
+        rpCash:
+            ""
+
+    };
+
+
+    sessions.unshift(
+        newSession
+    );
+
+
+    currentSessionId =
+        id;
+
+
+    currentStartTime =
+        null;
+
+
+    currentRunning =
+        false;
+
+
+    saveData();
+
+
+    startBtn.disabled =
+        false;
+
+
+    stopBtn.disabled =
+        true;
+
+
+    renderTable();
+
+});
+
+
+/*
+=====================================================
+START
+
+Setiap kali Start ditekan,
+dibuat Segmen baru.
+=====================================================
+*/
+
+startBtn.addEventListener(
+    "click",
+    () => {
+
+    if (currentRunning)
+        return;
+
+
+    if (!currentSessionId) {
+
+        if (sessions.length === 0) {
+
+            alert(
+                "Belum ada sesi. Tekan 'Buat Sesi Baru' terlebih dahulu."
+            );
+
+            return;
+
+        }
+
+
+        currentSessionId =
+            sessions[0].id;
+
+    }
+
+
+    const session =
+        sessions.find(
+            s =>
+                s.id ===
+                currentSessionId
+        );
+
+
+    if (!session)
+        return;
+
+
+    /*
+    =============================================
+    Jam Awal dan Jam Akhir harus diisi
+    =============================================
+    */
+
+    if (
+        !session.jamAwal ||
+        !session.jamAkhir
+    ) {
+
+        alert(
+            "Isi Jam Awal dan Jam Akhir terlebih dahulu."
+        );
+
+        return;
+
+    }
+
+
+    const window =
+        getWindowInfo(session);
+
+
+    if (!window) {
+
+        alert(
+            "Jam Akhir harus lebih besar daripada Jam Awal."
+        );
+
+        return;
+
+    }
+
+
+    /*
+    =============================================
+    BUAT SEGMEN BARU
+    =============================================
+    */
+
+    const now =
+        Date.now();
+
+
+    session.pairs.push({
+
+        id:
+            Date.now() +
+            Math.random(),
+
+        start:
+            now,
+
+        stop:
+            null
+
+    });
+
+
+    currentStartTime =
+        now;
+
+
+    currentRunning =
+        true;
+
+
+    saveData();
+
+
+    startBtn.disabled =
+        true;
+
+
+    stopBtn.disabled =
+        false;
+
+
+    renderTable();
+
+    alert(
+    "Jangan Lupa Isi KM AWAL"
+    );
+
+});
+
+
+/*
+=====================================================
+STOP
+=====================================================
+*/
+
+stopBtn.addEventListener(
+    "click",
+    () => {
+
+    if (!currentRunning)
+        return;
+
+
+    const session =
+        sessions.find(
+            s =>
+                s.id ===
+                currentSessionId
+        );
+
+
+    if (!session)
+        return;
+
+
+    const stopTime =
+        Date.now();
+
+
+    const pair =
+        session.pairs[
+            session.pairs.length - 1
+        ];
+
+
+    if (
+        pair &&
+        !pair.stop
+    ) {
+
+        pair.stop =
+            stopTime;
+
+    }
+
+
+    currentRunning =
+        false;
+
+
+    currentStartTime =
+        null;
+
+
+    saveData();
+
+
+    startBtn.disabled =
+        false;
+
+
+    stopBtn.disabled =
+        true;
+
+
+    renderTable();
+
+    alert(
+    "Jangan Lupa Isi KM AKHIR"
+    );
+
+});
+
+
+/*
+=====================================================
+CLEAR
+=====================================================
+*/
+
+clearBtn.addEventListener(
+    "click",
+    () => {
+
+    if (
+        sessions.length === 0
+    )
+        return;
+
+
+    const yakin =
+        confirm(
+            "Hapus semua data Aplikasi Ngojol?"
+        );
+
+
+    if (!yakin)
+        return;
+
+
+    sessions = [];
+
+
+    currentSessionId =
+        null;
+
+
+    currentRunning =
+        false;
+
+
+    currentStartTime =
+        null;
+
+
+    localStorage.removeItem(
+        STORAGE_KEY
+    );
+
+
+    startBtn.disabled =
+        false;
+
+
+    stopBtn.disabled =
+        true;
+
+
+    renderTable();
+
+});
+
+
+/*
+=====================================================
+EXPORT EXCEL
+=====================================================
+*/
+
+exportBtn.addEventListener(
+    "click",
+    () => {
+
+    if (
+        sessions.length === 0
+    ) {
+
+        alert(
+            "Belum ada data untuk diekspor."
+        );
+
+        return;
+
+    }
+
+
+    const rows = [];
+
+
+    sessions.forEach(
+        session => {
+
+        /*
+        =============================================
+        NILAI SESI
+        =============================================
+        */
+
+        const km =
+            Number(
+                session.kmAkhir || 0
+            )
+            -
+            Number(
+                session.kmAwal || 0
+            );
+
+
+        const sec =
+            getSessionTotalSeconds(
+                session
+            );
+
+
+        const rp =
+            Number(
+                session.rpAplikasi || 0
+            )
+            +
+            Number(
+                session.rpCash || 0
+            );
+
+
+        const effectiveMax =
+            getEffectiveMaxSeconds(
+                session
+            );
+
+
+        const effectiveReal =
+            getEffectiveRealSeconds(
+                session
+            );
+
+
+        /*
+        =============================================
+        SATU ROW UNTUK SETIAP SEGMEN
+        =============================================
+        */
+
+        session.pairs.forEach(
+            (pair, index) => {
+
+            rows.push({
+
+                "Sesi":
+                    formatDate(
+                        session.date
+                    ) +
+                    " - " +
+                    getDayName(
+                        session.date
+                    ),
+
+
+                "Jam Awal":
+                    session.jamAwal ||
+                    "",
+
+
+                "Jam Akhir":
+                    session.jamAkhir ||
+                    "",
+
+
+                "Segmen":
+                    "Segmen " +
+                    (index + 1),
+
+
+                "Start":
+                    formatTime(
+                        pair.start
+                    ),
+
+
+                "Stop":
+                    pair.stop
+                    ?
+                    formatTime(
+                        pair.stop
+                    )
+                    :
+                    "",
+
+
+                "Durasi":
+                    formatDuration(
+                        getPairSeconds(
+                            pair
+                        )
+                    ),
+
+
+                "Total Durasi":
+                    formatDuration(
+                        sec
+                    ),
+
+
+                "Durasi Efektif Maksimal":
+                    effectiveMax === null
+                    ?
+                    ""
+                    :
+                    formatDuration(
+                        effectiveMax
+                    ),
+
+
+                "Durasi Efektif Riil":
+                    formatDuration(
+                        effectiveReal
+                    ),
+
+
+                "Km Awal":
+                    session.kmAwal ||
+                    "",
+
+
+                "Km Akhir":
+                    session.kmAkhir ||
+                    "",
+
+
+                "Rupiah":
+                    rp,
+
+
+                "Rp / Km":
+                    km > 0
+                    ?
+                    Math.round(
+                        rp / km
+                    )
+                    :
+                    "",
+
+
+                "Km / Durasi":
+                    sec > 0
+                    ?
+                    (
+                        km /
+                        (sec / 3600)
+                    ).toFixed(2)
+                    :
+                    "",
+
+
+                "Rp / Durasi":
+                    sec > 0
+                    ?
+                    Math.round(
+                        rp /
+                        (sec / 3600)
+                    )
+                    :
+                    ""
+
+            });
+
+        });
+
+
+        /*
+        =============================================
+        SESI TANPA SEGMEN
+        =============================================
+        */
+
+        if (
+            session.pairs.length === 0
+        ) {
+
+            rows.push({
+
+                "Sesi":
+                    formatDate(
+                        session.date
+                    ) +
+                    " - " +
+                    getDayName(
+                        session.date
+                    ),
+
+
+                "Jam Awal":
+                    session.jamAwal ||
+                    "",
+
+
+                "Jam Akhir":
+                    session.jamAkhir ||
+                    "",
+
+
+                "Segmen":
+                    "",
+
+
+                "Start":
+                    "",
+
+
+                "Stop":
+                    "",
+
+
+                "Durasi":
+                    "",
+
+
+                "Total Durasi":
+                    "",
+
+
+                "Durasi Efektif Maksimal":
+                    effectiveMax === null
+                    ?
+                    ""
+                    :
+                    formatDuration(
+                        effectiveMax
+                    ),
+
+
+                "Durasi Efektif Riil":
+                    formatDuration(
+                        effectiveReal
+                    ),
+
+
+                "Km Awal":
+                    session.kmAwal ||
+                    "",
+
+
+                "Km Akhir":
+                    session.kmAkhir ||
+                    "",
+
+
+                "Rupiah":
+                    rp,
+
+
+                "Rp / Km":
+                    km > 0
+                    ?
+                    Math.round(
+                        rp / km
+                    )
+                    :
+                    "",
+
+
+                "Km / Durasi":
+                    "",
+
+
+                "Rp / Durasi":
+                    ""
+
+            });
+
+        }
+
+    });
+
+
+    const worksheet =
+        XLSX.utils.json_to_sheet(
+            rows
+        );
+
+
+    const workbook =
+        XLSX.utils.book_new();
+
+
+    XLSX.utils.book_append_sheet(
+        workbook,
+        worksheet,
+        "Ngojol"
+    );
+
+
+    XLSX.writeFile(
+        workbook,
+        "Aplikasi_Ngojol.xlsx"
+    );
+
+});
+
+
+/*
+=====================================================
+PULIHKAN SESI YANG MASIH BERJALAN
+=====================================================
+*/
+
+let runningSession = null;
+
+
+for (
+    let i = 0;
+    i < sessions.length;
+    i++
+) {
+
+    const session =
+        sessions[i];
+
+
+    if (!session.pairs)
+        continue;
+
+
+    const lastPair =
+        session.pairs[
+            session.pairs.length - 1
+        ];
+
+
+    if (
+        lastPair &&
+        lastPair.start &&
+        !lastPair.stop
+    ) {
+
+        runningSession =
+            session;
+
+        break;
+
+    }
+
+}
+
+
+if (runningSession) {
+
+    currentSessionId =
+        runningSession.id;
+
+
+    currentRunning =
+        true;
+
+
+    currentStartTime =
+        runningSession.pairs[
+            runningSession.pairs.length - 1
+        ].start;
+
+
+    saveData();
+
+
+    startBtn.disabled =
+        true;
+
+
+    stopBtn.disabled =
+        false;
+
+}
+else {
+
+    currentRunning =
+        false;
+
+
+    currentStartTime =
+        null;
+
+
+    startBtn.disabled =
+        false;
+
+
+    stopBtn.disabled =
+        true;
+
+}
+
+
+/*
+=====================================================
+RENDER PERTAMA
+=====================================================
+*/
+
+renderTable();
+
+
+/*
+=====================================================
+UPDATE SETIAP 1 DETIK
+=====================================================
+*/
+
+setInterval(
+    () => {
+
+        updateCalculations();
+        updateCurrentClock();
+
+    },
+    1000
+);
+
+updateCurrentClock();
+
+
+</script>
+
+<script>
+if ("serviceWorker" in navigator) {
+
+    window.addEventListener("load", () => {
+
+        navigator.serviceWorker.register(
+            "sw.js"
+        );
+
+    });
+
+}
+</script>
+
+</body>
+
+</html>
